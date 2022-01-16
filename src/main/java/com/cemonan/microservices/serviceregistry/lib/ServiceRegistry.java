@@ -1,7 +1,7 @@
 package com.cemonan.microservices.serviceregistry.lib;
 
-import com.cemonan.microservices.serviceregistry.config.Config;
 import com.cemonan.microservices.serviceregistry.pojo.Service;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
 import java.time.Instant;
@@ -9,10 +9,17 @@ import java.util.*;
 
 @Component
 public class ServiceRegistry {
+    @Value("${service.registry.default.timeout}")
+    private String defaultTimeout;
+
     private Map<String, Service> services;
 
     public ServiceRegistry() {
         this.services = new HashMap<String, Service>();
+    }
+
+    public Map<String, Service> getServices() {
+        return this.services;
     }
 
     public Service get(String name, String version) {
@@ -65,7 +72,7 @@ public class ServiceRegistry {
             Map.Entry<String, Service> entry = it.next();
             Service service = entry.getValue();
             String serviceId = entry.getKey();
-            if (service.getTimestamp() + Config.DEFAULT_SERVICE_TIMEOUT < now) {
+            if (service.getTimestamp() + Integer.parseInt(defaultTimeout) < now) {
                 it.remove();
                 System.out.println(
                         "Service with serviceId: "
