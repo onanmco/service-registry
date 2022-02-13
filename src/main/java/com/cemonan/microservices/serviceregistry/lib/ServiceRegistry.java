@@ -1,8 +1,13 @@
 package com.cemonan.microservices.serviceregistry.lib;
 
+import com.cemonan.microservices.serviceregistry.dao.ServiceDao;
 import com.cemonan.microservices.serviceregistry.pojo.Service;
 import com.vdurmont.semver4j.Semver;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Component;
 
 import java.time.Instant;
@@ -10,33 +15,35 @@ import java.util.*;
 
 @Component
 public class ServiceRegistry {
+    @Autowired
+    ServiceDao serviceDao;
+
     @Value("${service.registry.default.timeout}")
     private String defaultTimeout;
 
-    private Map<String, Service> services;
+    public ServiceRegistry() {}
 
-    public ServiceRegistry() {
-        this.services = new HashMap<String, Service>();
-    }
-
-    public Map<String, Service> getServices() {
-        return this.services;
+    public List<Service> getServices() {
+        this.cleanup();
+        return serviceDao.getAllServices();
     }
 
     public Service get(String name, String version) {
         this.cleanup();
-        List<Service> candidates = this.getCandidates(name, version);
+        List<Service> allServices = serviceDao.getAllByNameOrderByUsedCount(name, Sort.by(Sort.Direction.ASC, "count"));
+        List<Service> candidates = this.getCandidates(allServices, version);
         if (candidates.size() == 0) {
             return null;
         }
-        return candidates.get((int) Math.floor(Math.random() * candidates.size()));
+        Service service = candidates.get(0);
+        service.setUsedCount(service.getUsedCount() + 1L);
+        return serviceDao.update(service);
     }
 
-    protected List<Service> getCandidates(String name, String version) {
+    protected List<Service> getCandidates(List<Service> services, String version) {
         List<Service> candidates = new ArrayList<>();
-        for (String serviceId : this.services.keySet()) {
-            Service service = this.services.get(serviceId);
-            if (name.equals(service.getName()) && this.isServiceSatisfiesVersion(version, service.getVersion())) {
+        for (Service service : services) {
+            if (isServiceSatisfiesVersion(version, service.getVersion())) {
                 candidates.add(service);
             }
         }
@@ -48,43 +55,44 @@ public class ServiceRegistry {
         return semver.satisfies(providedVersion);
     }
 
-    public String add(String name, String version, String ip, String port) {
+    public Long add(String name, String version, String ip, String port) {
         this.cleanup();
-        String serviceId = String.join("/", Arrays.asList(name, version, ip, port));
         long now = Instant.now().getEpochSecond();
-        Service existingService = this.services.get(serviceId);
+        Service existingService = serviceDao.getServiceByNameAndVersionAndIpAndPort(name, version, ip, port);
         if (existingService != null) {
             existingService.setTimestamp(now);
-            return serviceId;
+            return existingService.getId();
         }
-        Service service = new Service(name, version, ip, port, now);
-        this.services.put(serviceId, service);
-        return serviceId;
+        Service service = new Service();
+        service.setName(name);
+        service.setVersion(version);
+        service.setIp(ip);
+        service.setPort(port);
+        service.setTimestamp(now);
+        service.setUsedCount(0L);
+        Service savedService = serviceDao.save(service);
+        return savedService.getId();
     }
 
-    public String delete(String name, String version, String ip, String port) {
-        String serviceId = String.join("/", Arrays.asList(name, version, ip, port));
-        Service existingService = this.services.get(serviceId);
+    public Long delete(String name, String version, String ip, String port) {
+        Service existingService = serviceDao.getServiceByNameAndVersionAndIpAndPort(name, version, ip, port);
         if (existingService == null) {
             return null;
         }
-        this.services.remove(serviceId);
-        return serviceId;
+        serviceDao.delete(existingService);
+        return existingService.getId();
     }
 
     public void cleanup() {
         Long now = Instant.now().getEpochSecond();
-        Iterator<Map.Entry<String, Service>> it = this.services.entrySet().iterator();
-        while (it.hasNext()) {
-            Map.Entry<String, Service> entry = it.next();
-            Service service = entry.getValue();
-            String serviceId = entry.getKey();
+
+        List<Service> allServices = serviceDao.getAllServices();
+
+        for (Service service : allServices) {
             if (service.getTimestamp() + Integer.parseInt(defaultTimeout) < now) {
-                it.remove();
+                serviceDao.delete(service);
                 System.out.println(
-                        "Service with serviceId: "
-                        + serviceId +
-                        " has been removed from the registry because of that service has been expired."
+                        String.format("Service with id: %s has been removed from the registry because it's been expired.", service.getId())
                 );
             }
         }
