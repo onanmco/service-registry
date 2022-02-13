@@ -1,6 +1,7 @@
 package com.cemonan.microservices.serviceregistry;
 
 import com.cemonan.microservices.serviceregistry.lib.ServiceRegistry;
+import com.cemonan.microservices.serviceregistry.lib.ServiceRegistryTest;
 import com.cemonan.microservices.serviceregistry.pojo.Service;
 import org.junit.jupiter.api.MethodOrderer;
 import org.junit.jupiter.api.Order;
@@ -10,13 +11,15 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.test.context.SpringBootTest;
 
+import java.util.List;
+
 import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
 
 @TestMethodOrder(MethodOrderer.OrderAnnotation.class)
 @SpringBootTest
 class ServiceRegistryApplicationTests {
 	@Autowired
-	ServiceRegistry serviceRegistry;
+	ServiceRegistryTest serviceRegistry;
 
 	@Value("${service.registry.default.timeout}")
 	private String defaultTimeout;
@@ -73,5 +76,19 @@ class ServiceRegistryApplicationTests {
 
 		int count2 = serviceRegistry.getServices().size();
 		assertThat(count2).isEqualTo(1);
+	}
+
+	@Test
+	@Order(4)
+	void testCandidates() {
+		serviceRegistry.add("Service 1", "1.1.0", "localhost", "3000");
+		serviceRegistry.add("Service 1", "1.1.1", "localhost", "3001");
+		serviceRegistry.add("Service 1", "1.1.2", "localhost", "3002");
+		serviceRegistry.add("Service 1", "1.3.1", "localhost", "3003");
+		serviceRegistry.add("Service 1", "1.5.2", "localhost", "3005");
+
+		List<Service> candidates = serviceRegistry.getCandidateServices("Service 1", "1");
+
+		assertThat(candidates.size()).isEqualTo(5);
 	}
 }
