@@ -32,7 +32,7 @@ public class ServiceRegistry {
         return candidates.get((int) Math.floor(Math.random() * candidates.size()));
     }
 
-    public List<Service> getCandidates(String name, String version) {
+    protected List<Service> getCandidates(String name, String version) {
         List<Service> candidates = new ArrayList<>();
         for (String serviceId : this.services.keySet()) {
             Service service = this.services.get(serviceId);

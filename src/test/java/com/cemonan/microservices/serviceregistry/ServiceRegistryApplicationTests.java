@@ -1,6 +1,7 @@
 package com.cemonan.microservices.serviceregistry;
 
 import com.cemonan.microservices.serviceregistry.lib.ServiceRegistry;
+import com.cemonan.microservices.serviceregistry.lib.ServiceRegistryTest;
 import com.cemonan.microservices.serviceregistry.pojo.Service;
 import org.junit.jupiter.api.MethodOrderer;
 import org.junit.jupiter.api.Order;
@@ -18,7 +19,7 @@ import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
 @SpringBootTest
 class ServiceRegistryApplicationTests {
 	@Autowired
-	ServiceRegistry serviceRegistry;
+	ServiceRegistryTest serviceRegistry;
 
 	@Value("${service.registry.default.timeout}")
 	private String defaultTimeout;
@@ -86,7 +87,7 @@ class ServiceRegistryApplicationTests {
 		serviceRegistry.add("Service 1", "1.3.1", "localhost", "3003");
 		serviceRegistry.add("Service 1", "1.5.2", "localhost", "3005");
 
-		List<Service> candidates = serviceRegistry.getCandidates("Service 1", "1");
+		List<Service> candidates = serviceRegistry.getCandidateServices("Service 1", "1");
 
 		assertThat(candidates.size()).isEqualTo(5);
 	}
