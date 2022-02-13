@@ -2,6 +2,7 @@ package com.cemonan.microservices.serviceregistry.dao;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.jdbc.core.JdbcTemplate;
+import org.springframework.jdbc.core.RowMapper;
 import org.springframework.stereotype.Component;
 
 import javax.persistence.Entity;
@@ -11,6 +12,7 @@ import javax.persistence.Table;
 import javax.persistence.metamodel.EntityType;
 import javax.persistence.metamodel.Metamodel;
 import java.util.Map;
+import java.util.UUID;
 
 @Component
 public abstract class Dao {

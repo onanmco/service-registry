@@ -1,17 +1,20 @@
-package com.cemonan.microservices.serviceregistry.pojo;
+package com.cemonan.microservices.serviceregistry.domain;
 
-import org.springframework.stereotype.Component;
+import org.hibernate.annotations.Type;
 
 import javax.persistence.*;
 import java.util.Objects;
+import java.util.UUID;
 
 @Entity
 @Table(name = "services")
 public class Service {
 
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id;
+    @GeneratedValue(strategy = GenerationType.AUTO)
+    @Type(type = "org.hibernate.type.UUIDCharType")
+    @Column(name = "id", updatable = false, nullable = false)
+    private UUID id;
     private String name;
     private String version;
     private String ip;
@@ -43,11 +46,11 @@ public class Service {
         this.usedCount = usedCount;
     }
 
-    public Long getId() {
+    public UUID getId() {
         return id;
     }
 
-    public void setId(Long id) {
+    public void setId(UUID id) {
         this.id = id;
     }
 

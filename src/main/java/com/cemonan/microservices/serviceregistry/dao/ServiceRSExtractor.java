@@ -1,6 +1,6 @@
 package com.cemonan.microservices.serviceregistry.dao;
 
-import com.cemonan.microservices.serviceregistry.pojo.Service;
+import com.cemonan.microservices.serviceregistry.domain.Service;
 import org.springframework.dao.DataAccessException;
 import org.springframework.jdbc.core.ResultSetExtractor;
 import org.springframework.stereotype.Component;
@@ -9,6 +9,7 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.UUID;
 
 @Component
 public class ServiceRSExtractor implements ResultSetExtractor<List<Service>> {
@@ -19,7 +20,7 @@ public class ServiceRSExtractor implements ResultSetExtractor<List<Service>> {
         while (rs.next()) {
             Service service = new Service();
 
-            service.setId(rs.getLong("id"));
+            service.setId(UUID.fromString(rs.getString("id")));
             service.setName(rs.getString("name"));
             service.setVersion(rs.getString("version"));
             service.setIp(rs.getString("ip"));
