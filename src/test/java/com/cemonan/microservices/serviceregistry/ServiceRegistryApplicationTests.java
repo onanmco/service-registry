@@ -10,6 +10,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.test.context.SpringBootTest;
 
+import java.util.List;
+
 import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
 
 @TestMethodOrder(MethodOrderer.OrderAnnotation.class)
@@ -73,5 +75,19 @@ class ServiceRegistryApplicationTests {
 
 		int count2 = serviceRegistry.getServices().size();
 		assertThat(count2).isEqualTo(1);
+	}
+
+	@Test
+	@Order(4)
+	void testCandidates() {
+		serviceRegistry.add("Service 1", "1.1.0", "localhost", "3000");
+		serviceRegistry.add("Service 1", "1.1.1", "localhost", "3001");
+		serviceRegistry.add("Service 1", "1.1.2", "localhost", "3002");
+		serviceRegistry.add("Service 1", "1.3.1", "localhost", "3003");
+		serviceRegistry.add("Service 1", "1.5.2", "localhost", "3005");
+
+		List<Service> candidates = serviceRegistry.getCandidates("Service 1", "1");
+
+		assertThat(candidates.size()).isEqualTo(5);
 	}
 }

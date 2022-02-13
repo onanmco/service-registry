@@ -1,6 +1,7 @@
 package com.cemonan.microservices.serviceregistry.lib;
 
 import com.cemonan.microservices.serviceregistry.pojo.Service;
+import com.vdurmont.semver4j.Semver;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
@@ -24,6 +25,14 @@ public class ServiceRegistry {
 
     public Service get(String name, String version) {
         this.cleanup();
+        List<Service> candidates = this.getCandidates(name, version);
+        if (candidates.size() == 0) {
+            return null;
+        }
+        return candidates.get((int) Math.floor(Math.random() * candidates.size()));
+    }
+
+    public List<Service> getCandidates(String name, String version) {
         List<Service> candidates = new ArrayList<>();
         for (String serviceId : this.services.keySet()) {
             Service service = this.services.get(serviceId);
@@ -31,14 +40,12 @@ public class ServiceRegistry {
                 candidates.add(service);
             }
         }
-        if (candidates.size() == 0) {
-            return null;
-        }
-        return candidates.get((int) Math.floor(Math.random() * candidates.size()));
+        return candidates;
     }
 
     private Boolean isServiceSatisfiesVersion(String providedVersion, String currentVersion) {
-        return currentVersion.startsWith(providedVersion);
+        Semver semver = new Semver(currentVersion, Semver.SemverType.NPM);
+        return semver.satisfies(providedVersion);
     }
 
     public String add(String name, String version, String ip, String port) {
