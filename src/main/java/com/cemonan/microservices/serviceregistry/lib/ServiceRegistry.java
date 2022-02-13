@@ -1,12 +1,10 @@
 package com.cemonan.microservices.serviceregistry.lib;
 
 import com.cemonan.microservices.serviceregistry.dao.ServiceDao;
-import com.cemonan.microservices.serviceregistry.pojo.Service;
+import com.cemonan.microservices.serviceregistry.domain.Service;
 import com.vdurmont.semver4j.Semver;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Component;
 
@@ -55,7 +53,7 @@ public class ServiceRegistry {
         return semver.satisfies(providedVersion);
     }
 
-    public Long add(String name, String version, String ip, String port) {
+    public UUID add(String name, String version, String ip, String port) {
         this.cleanup();
         long now = Instant.now().getEpochSecond();
         Service existingService = serviceDao.getServiceByNameAndVersionAndIpAndPort(name, version, ip, port);
@@ -74,7 +72,7 @@ public class ServiceRegistry {
         return savedService.getId();
     }
 
-    public Long delete(String name, String version, String ip, String port) {
+    public UUID delete(String name, String version, String ip, String port) {
         Service existingService = serviceDao.getServiceByNameAndVersionAndIpAndPort(name, version, ip, port);
         if (existingService == null) {
             return null;

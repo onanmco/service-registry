@@ -1,14 +1,13 @@
 package com.cemonan.microservices.serviceregistry.dao;
 
-import com.cemonan.microservices.serviceregistry.pojo.Service;
+import com.cemonan.microservices.serviceregistry.domain.Service;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.jdbc.core.ResultSetExtractor;
 import org.springframework.stereotype.Component;
 
-import javax.persistence.Entity;
 import java.util.List;
+import java.util.UUID;
 
 @Component
 public class ServiceDaoImpl extends Dao implements ServiceDao {
@@ -18,9 +17,11 @@ public class ServiceDaoImpl extends Dao implements ServiceDao {
 
     @Override
     public Service save(Service service) {
+        UUID id = UUID.randomUUID();
         jdbcTemplate.update(
-                "INSERT INTO services (`name`, version, ip, port, `timestamp`, `count`) " +
-                    "VALUES (?, ?, ?, ?, ?, ?)",
+                "INSERT INTO services (id, `name`, version, ip, port, `timestamp`, `count`) " +
+                    "VALUES (?, ?, ?, ?, ?, ?, ?)",
+                id.toString(),
                 service.getName(),
                 service.getVersion(),
                 service.getIp(),
@@ -29,17 +30,15 @@ public class ServiceDaoImpl extends Dao implements ServiceDao {
                 service.getUsedCount()
         );
 
-        Long id = this.getLastInsertId();
-
         return this.getServiceById(id);
     }
 
     @Override
-    public Service getServiceById(Long id) {
+    public Service getServiceById(UUID id) {
         List<Service> services = jdbcTemplate.query(
                 "SELECT * FROM services WHERE id = ?",
                 resultSetExtractor,
-                id
+                id.toString()
         );
 
         if (services.size() == 0) {
@@ -74,7 +73,7 @@ public class ServiceDaoImpl extends Dao implements ServiceDao {
                 service.getPort(),
                 service.getTimestamp(),
                 service.getUsedCount(),
-                service.getId()
+                service.getId().toString()
         );
 
         return this.getServiceById(service.getId());
@@ -84,7 +83,7 @@ public class ServiceDaoImpl extends Dao implements ServiceDao {
     public void delete(Service service) {
         jdbcTemplate.update(
                 "DELETE FROM services WHERE id = ?",
-                service.getId()
+                service.getId().toString()
         );
     }
 
