@@ -34,10 +34,10 @@ public class ServiceRegistryController {
             @PathVariable String port
     ) {
         String ip = this.getParsedRemoteAddr(request.getRemoteAddr());
-        String serviceId = serviceRegistry.add(name, version, ip, port);
+        Long serviceId = serviceRegistry.add(name, version, ip, port);
         Map<String, String> responseBody = new HashMap<String, String>();
         responseBody.put("message", "Service has been registered successfully.");
-        responseBody.put("serviceId", serviceId);
+        responseBody.put("serviceId", serviceId.toString());
         return new ResponseEntity(responseBody, HttpStatus.CREATED);
     }
 
@@ -69,7 +69,7 @@ public class ServiceRegistryController {
             @PathVariable String port
     ) {
         String ip = this.getParsedRemoteAddr(request.getRemoteAddr());
-        String deletedServiceId = serviceRegistry.delete(name, version, ip, port);
+        Long deletedServiceId = serviceRegistry.delete(name, version, ip, port);
         if (deletedServiceId == null) {
             throw new ServiceNotFoundException(
                     String.format(
@@ -80,7 +80,7 @@ public class ServiceRegistryController {
         }
         Map<String, String> responseBody = new HashMap<String, String>();
         responseBody.put("message", "Service has been deleted successfully.");
-        responseBody.put("serviceId", deletedServiceId);
+        responseBody.put("serviceId", deletedServiceId.toString());
         return new ResponseEntity(responseBody, HttpStatus.OK);
     }
 }

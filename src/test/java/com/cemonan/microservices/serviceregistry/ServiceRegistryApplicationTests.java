@@ -1,7 +1,6 @@
 package com.cemonan.microservices.serviceregistry;
 
 import com.cemonan.microservices.serviceregistry.lib.ServiceRegistry;
-import com.cemonan.microservices.serviceregistry.lib.ServiceRegistryTest;
 import com.cemonan.microservices.serviceregistry.pojo.Service;
 import org.junit.jupiter.api.MethodOrderer;
 import org.junit.jupiter.api.Order;
@@ -12,6 +11,7 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.test.context.SpringBootTest;
 
 import java.util.List;
+import java.util.UUID;
 
 import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
 
@@ -19,7 +19,7 @@ import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
 @SpringBootTest
 class ServiceRegistryApplicationTests {
 	@Autowired
-	ServiceRegistryTest serviceRegistry;
+	ServiceRegistry serviceRegistry;
 
 	@Value("${service.registry.default.timeout}")
 	private String defaultTimeout;
@@ -28,16 +28,15 @@ class ServiceRegistryApplicationTests {
 	@Order(1)
 	public void testCreateService() {
 		int countBefore = serviceRegistry.getServices().size();
-		assertThat(countBefore).isEqualTo(0);
 
-		String addedServiceId1 = serviceRegistry.add("Service 1", "1.1.0", "localhost", "3000");
+		Long addedServiceId1 = serviceRegistry.add("Service 1", "1.1.0", "localhost", "3000");
 		serviceRegistry.add("Service 1", "1.1.1", "localhost", "3001");
 		serviceRegistry.add("Service 1", "1.1.2", "localhost", "3002");
-		String addedServiceId2 = serviceRegistry.add("Service 1", "1.1.0", "localhost", "3000");
+		Long addedServiceId2 = serviceRegistry.add("Service 1", "1.1.0", "localhost", "3000");
 
 		int countAfter = serviceRegistry.getServices().size();
-		assertThat(countAfter).isEqualTo(3);
 
+		assertThat(countAfter).isGreaterThan(countBefore);
 		assertThat(addedServiceId1).isEqualTo(addedServiceId2);
 	}
 
@@ -48,11 +47,11 @@ class ServiceRegistryApplicationTests {
 
 		serviceRegistry.add("Service 1", "1.1.3", "localhost", "3003");
 		serviceRegistry.add("Service 1", "1.1.4", "localhost", "3004");
-		String addedServiceId1 = serviceRegistry.add("Service 1", "1.1.5", "localhost", "3005");
-		String addedServiceId2 = serviceRegistry.add("Service 1", "1.1.3", "localhost", "3003");
+		Long addedServiceId1 = serviceRegistry.add("Service 1", "1.1.5", "localhost", "3005");
+		Long addedServiceId2 = serviceRegistry.add("Service 1", "1.1.3", "localhost", "3003");
 
-		String deletedServiceId1 =serviceRegistry.delete("Service 1", "1.1.5", "localhost", "3005");
-		String deletedServiceId2 = serviceRegistry.delete("Service 1", "1.1.3", "localhost", "3003");
+		Long deletedServiceId1 =serviceRegistry.delete("Service 1", "1.1.5", "localhost", "3005");
+		Long deletedServiceId2 = serviceRegistry.delete("Service 1", "1.1.3", "localhost", "3003");
 
 		int countAfter = serviceRegistry.getServices().size();
 		assertThat(countAfter).isEqualTo(countBefore + 1);
@@ -64,31 +63,21 @@ class ServiceRegistryApplicationTests {
 	@Test
 	@Order(3)
 	public void testCleanupOnTimeout() {
-		serviceRegistry.add("Service 1", "1.1.0", "localhost", "3000");
-		serviceRegistry.add("Service 1", "1.1.1", "localhost", "3001");
-		serviceRegistry.add("Service 1", "1.1.2", "localhost", "3002");
+		int count1 = serviceRegistry.getServices().size();
+
+		serviceRegistry.add(UUID.randomUUID().toString(), "1.1.0", "localhost", "3000");
+
+		int count2 = serviceRegistry.getServices().size();
+
+		assertThat(count2).isEqualTo(count1 + 1);
 
 		try {
 			Thread.sleep((Integer.parseInt(defaultTimeout) + 1) * 1000);
 		} catch(Exception ex) {}
 
-		serviceRegistry.add("Service 1", "1.1.0", "localhost", "3000");
+		serviceRegistry.add(UUID.randomUUID().toString(), "1.1.0", "localhost", "3000");
 
-		int count2 = serviceRegistry.getServices().size();
-		assertThat(count2).isEqualTo(1);
-	}
-
-	@Test
-	@Order(4)
-	void testCandidates() {
-		serviceRegistry.add("Service 1", "1.1.0", "localhost", "3000");
-		serviceRegistry.add("Service 1", "1.1.1", "localhost", "3001");
-		serviceRegistry.add("Service 1", "1.1.2", "localhost", "3002");
-		serviceRegistry.add("Service 1", "1.3.1", "localhost", "3003");
-		serviceRegistry.add("Service 1", "1.5.2", "localhost", "3005");
-
-		List<Service> candidates = serviceRegistry.getCandidateServices("Service 1", "1");
-
-		assertThat(candidates.size()).isEqualTo(5);
+		int count3 = serviceRegistry.getServices().size();
+		assertThat(count3).isEqualTo(count1 + 1);
 	}
 }
