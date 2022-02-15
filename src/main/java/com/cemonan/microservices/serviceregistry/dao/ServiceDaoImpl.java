@@ -6,14 +6,20 @@ import org.springframework.data.domain.Sort;
 import org.springframework.jdbc.core.ResultSetExtractor;
 import org.springframework.stereotype.Component;
 
+import javax.persistence.EntityManagerFactory;
 import java.util.List;
 import java.util.UUID;
 
 @Component
 public class ServiceDaoImpl extends Dao implements ServiceDao {
 
+    private final ResultSetExtractor<List<Service>> resultSetExtractor;
+
     @Autowired
-    ResultSetExtractor<List<Service>> resultSetExtractor;
+    public ServiceDaoImpl(EntityManagerFactory emf, ResultSetExtractor<List<Service>> resultSetExtractor) {
+        super(emf);
+        this.resultSetExtractor = resultSetExtractor;
+    }
 
     @Override
     public Service save(Service service) {

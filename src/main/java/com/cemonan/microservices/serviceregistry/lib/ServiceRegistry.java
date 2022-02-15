@@ -13,13 +13,16 @@ import java.util.*;
 
 @Component
 public class ServiceRegistry {
-    @Autowired
-    ServiceDao serviceDao;
+
+    private final ServiceDao serviceDao;
 
     @Value("${service.registry.default.timeout}")
     private String defaultTimeout;
 
-    public ServiceRegistry() {}
+    @Autowired
+    public ServiceRegistry(ServiceDao serviceDao) {
+        this.serviceDao = serviceDao;
+    }
 
     public List<Service> getServices() {
         this.cleanup();

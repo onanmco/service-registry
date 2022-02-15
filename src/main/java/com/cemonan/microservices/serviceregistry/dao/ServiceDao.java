@@ -2,10 +2,12 @@ package com.cemonan.microservices.serviceregistry.dao;
 
 import com.cemonan.microservices.serviceregistry.domain.Service;
 import org.springframework.data.domain.Sort;
+import org.springframework.stereotype.Component;
 
 import java.util.List;
 import java.util.UUID;
 
+@Component
 public interface ServiceDao {
     Service save(Service service);
     Service getServiceById(UUID id);
