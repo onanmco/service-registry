@@ -1,4 +1,4 @@
-package com.cemonan.microservices.serviceregistry.dao;
+package com.cemonan.microservices.serviceregistry.dao.service_dao;
 
 import com.cemonan.microservices.serviceregistry.domain.Service;
 import org.springframework.data.domain.Sort;

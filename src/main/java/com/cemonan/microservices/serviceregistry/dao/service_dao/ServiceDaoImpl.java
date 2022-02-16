@@ -1,8 +1,10 @@
-package com.cemonan.microservices.serviceregistry.dao;
+package com.cemonan.microservices.serviceregistry.dao.service_dao;
 
+import com.cemonan.microservices.serviceregistry.dao.Dao;
 import com.cemonan.microservices.serviceregistry.domain.Service;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Sort;
+import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.ResultSetExtractor;
 import org.springframework.stereotype.Component;
 
@@ -16,8 +18,8 @@ public class ServiceDaoImpl extends Dao implements ServiceDao {
     private final ResultSetExtractor<List<Service>> resultSetExtractor;
 
     @Autowired
-    public ServiceDaoImpl(EntityManagerFactory emf, ResultSetExtractor<List<Service>> resultSetExtractor) {
-        super(emf);
+    public ServiceDaoImpl(EntityManagerFactory emf, ResultSetExtractor<List<Service>> resultSetExtractor, JdbcTemplate jdbcTemplate) {
+        super(emf, jdbcTemplate);
         this.resultSetExtractor = resultSetExtractor;
     }
 
