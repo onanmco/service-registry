@@ -17,14 +17,17 @@ import java.util.UUID;
 @Controller
 @RequestMapping(path = "/services")
 public class ServiceRegistryController {
-    @Autowired
-    ServiceRegistry serviceRegistry;
+
+    private final ServiceRegistry serviceRegistry;
+    private final HttpServletRequest request;
+    private final HttpServletResponse response;
 
     @Autowired
-    HttpServletRequest request;
-
-    @Autowired
-    HttpServletResponse response;
+    public ServiceRegistryController(ServiceRegistry serviceRegistry, HttpServletRequest request, HttpServletResponse response) {
+        this.serviceRegistry = serviceRegistry;
+        this.request = request;
+        this.response = response;
+    }
 
     @PostMapping(path = "/{name}/{version}/{port}")
     public ResponseEntity<Object> addServiceToServiceRegistry(

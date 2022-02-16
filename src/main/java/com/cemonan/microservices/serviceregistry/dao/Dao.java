@@ -11,13 +11,12 @@ import javax.persistence.metamodel.Metamodel;
 public abstract class Dao {
 
     private final EntityManagerFactory entityManagerFactory;
+    protected final JdbcTemplate jdbcTemplate;
 
     @Autowired
-    protected JdbcTemplate jdbcTemplate;
-
-    @Autowired
-    public Dao(EntityManagerFactory entityManagerFactory) {
+    public Dao(EntityManagerFactory entityManagerFactory, JdbcTemplate jdbcTemplate) {
         this.entityManagerFactory = entityManagerFactory;
+        this.jdbcTemplate = jdbcTemplate;
     }
 
     abstract protected Class<?> getEntityClass();

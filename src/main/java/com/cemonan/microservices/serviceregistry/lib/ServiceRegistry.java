@@ -1,6 +1,6 @@
 package com.cemonan.microservices.serviceregistry.lib;
 
-import com.cemonan.microservices.serviceregistry.dao.ServiceDao;
+import com.cemonan.microservices.serviceregistry.dao.service_dao.ServiceDao;
 import com.cemonan.microservices.serviceregistry.domain.Service;
 import com.vdurmont.semver4j.Semver;
 import org.springframework.beans.factory.annotation.Autowired;
